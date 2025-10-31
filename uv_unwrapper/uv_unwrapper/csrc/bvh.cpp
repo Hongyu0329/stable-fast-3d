@@ -79,7 +79,8 @@ void BVH::UpdateNodeBounds(unsigned int nodeIdx, AABB &centroidBounds) {
   BVHNode &node = bvhNode[nodeIdx];
 #ifndef __ARM_ARCH_ISA_A64
 #ifndef _MSC_VER
-  if (__builtin_cpu_supports("sse"))
+  // Disabled __builtin_cpu_supports to avoid crashes in Docker/certain environments
+  if constexpr (false)
 #elif (defined(_M_AMD64) || defined(_M_X64))
   // SSE supported on Windows
   if constexpr (true)
@@ -239,7 +240,8 @@ float BVH::FindBestSplitPlane(BVHNode &node, int &best_axis, int &best_pos,
     int leftSum = 0, rightSum = 0;
 #ifndef __ARM_ARCH_ISA_A64
 #ifndef _MSC_VER
-    if (__builtin_cpu_supports("sse"))
+    // Disabled __builtin_cpu_supports to avoid crashes in Docker/certain environments
+    if constexpr (false)
 #elif (defined(_M_AMD64) || defined(_M_X64))
     // SSE supported on Windows
     if constexpr (true)

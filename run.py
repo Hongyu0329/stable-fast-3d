@@ -60,6 +60,13 @@ if __name__ == "__main__":
     parser.add_argument(
         "--batch_size", default=1, type=int, help="Batch size for inference"
     )
+    parser.add_argument(
+        "--output-format",
+        choices=["glb", "obj"],
+        default="glb",
+        type=str,
+        help="Output mesh format: 'glb' (single binary file) or 'obj' (geometry + materials). Default: 'glb'",
+    )
     args = parser.parse_args()
 
     # Ensure args.device contains cuda
@@ -84,7 +91,16 @@ if __name__ == "__main__":
     model.to(device)
     model.eval()
 
-    rembg_session = rembg.new_session()
+    # Configure rembg to use GPU if available
+    # Skip TensorRT (requires extra install) and use CUDA directly
+    if torch.cuda.is_available():
+        rembg_providers = ['CUDAExecutionProvider', 'CPUExecutionProvider']
+        print("Using GPU (CUDA) for background removal")
+    else:
+        rembg_providers = ['CPUExecutionProvider']
+        print("Using CPU for background removal")
+    
+    rembg_session = rembg.new_session(providers=rembg_providers)
     images = []
     idx = 0
     for image_path in args.image:
@@ -133,9 +149,9 @@ if __name__ == "__main__":
             )
 
         if len(image) == 1:
-            out_mesh_path = os.path.join(output_dir, str(i), "mesh.glb")
+            out_mesh_path = os.path.join(output_dir, str(i), f"mesh.{args.output_format}")
             mesh.export(out_mesh_path, include_normals=True)
         else:
             for j in range(len(mesh)):
-                out_mesh_path = os.path.join(output_dir, str(i + j), "mesh.glb")
+                out_mesh_path = os.path.join(output_dir, str(i + j), f"mesh.{args.output_format}")
                 mesh[j].export(out_mesh_path, include_normals=True)

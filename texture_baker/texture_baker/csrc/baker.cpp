@@ -38,12 +38,8 @@ float BVH::find_best_split_plane(const BVHNode &node, int &best_axis,
     int leftSum = 0, rightSum = 0;
 
 #ifndef __ARM_ARCH_ISA_A64
-#ifndef _MSC_VER
-    if (__builtin_cpu_supports("sse"))
-#elif (defined(_M_AMD64) || defined(_M_X64))
-    // SSE supported on Windows
-    if constexpr (true)
-#endif
+    // Disable SSE path due to __builtin_cpu_supports crashes in Docker  
+    if constexpr (false)
     {
       __m128 min4[BINS], max4[BINS];
       unsigned int count[BINS];
@@ -139,12 +135,8 @@ float BVH::find_best_split_plane(const BVHNode &node, int &best_axis,
 
 void BVH::update_node_bounds(BVHNode &node, AABB &centroidBounds) {
 #ifndef __ARM_ARCH_ISA_A64
-#ifndef _MSC_VER
-  if (__builtin_cpu_supports("sse"))
-#elif (defined(_M_AMD64) || defined(_M_X64))
-  // SSE supported on Windows
-  if constexpr (true)
-#endif
+  // Disable SSE path due to __builtin_cpu_supports crashes in Docker
+  if constexpr (false)
   {
     __m128 min4 = _mm_set_ps1(1e30f), max4 = _mm_set_ps1(-1e30f);
     __m128 cmin4 = _mm_set_ps1(1e30f), cmax4 = _mm_set_ps1(-1e30f);
